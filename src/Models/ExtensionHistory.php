@@ -20,9 +20,9 @@ class ExtensionHistory extends Model
 
     protected function init()
     {
-        $connection = config('admin.database.connection') ?: config('database.default');
+        // $connection = config('admin.database.connection') ?: config('database.default');
 
-        $this->setConnection($connection);
+        // $this->setConnection($connection);
 
         $this->setTable(config('admin.database.extension_histories_table') ?: 'admin_extension_histories');
     }
