@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Storage;
 
 class Image extends AbstractDisplayer
 {
-    public function display($server = '', $width = 200, $height = 200)
+    public function display($server = '', $width = 100, $height = 100)
     {
         if ($this->value instanceof Arrayable) {
             $this->value = $this->value->toArray();

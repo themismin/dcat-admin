@@ -212,7 +212,7 @@ class Field implements Renderable
      * @param  int  $height
      * @return $this
      */
-    public function image($server = '', $width = 200, $height = 200)
+    public function image($server = '', $width = 100, $height = 100)
     {
         return $this->unescape()->as(function ($path) use ($server, $width, $height) {
             if (empty($path)) {
