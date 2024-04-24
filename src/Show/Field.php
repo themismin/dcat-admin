@@ -187,6 +187,15 @@ class Field implements Renderable
     }
 
     /**
+     * 存在字段显示回调.
+     * @return bool
+     */
+    public function hasShowAs()
+    {
+        return $this->showAs->isNotEmpty();
+    }
+
+    /**
      * Display field using array value map.
      *
      * @param  array  $values
