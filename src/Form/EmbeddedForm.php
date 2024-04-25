@@ -129,6 +129,11 @@ class EmbeddedForm
         return $this;
     }
 
+    public function getParent()
+    {
+        return $this->parent;
+    }
+
     public function getKey()
     {
         return $this->parent->getKey();
