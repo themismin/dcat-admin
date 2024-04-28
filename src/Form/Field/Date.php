@@ -2,6 +2,8 @@
 
 namespace Dcat\Admin\Form\Field;
 
+use Carbon\Carbon;
+
 class Date extends Text
 {
     public static $js = [
@@ -12,7 +14,15 @@ class Date extends Text
         '@bootstrap-datetimepicker',
     ];
 
-    protected $format = 'YYYY-MM-DD';
+    protected $format = 'Y-m-d';
+
+    protected $key = 'app.date_format';
+
+    public function __construct($column, $arguments = [])
+    {
+        parent::__construct($column, $arguments);
+        $this->format(config($this->key, $this->form));
+    }
 
     public function format($format)
     {
@@ -23,16 +33,46 @@ class Date extends Text
 
     protected function prepareInputValue($value)
     {
-        if ($value === '') {
-            $value = null;
+        if (empty($value)) {
+            return null;
         }
 
-        return $value;
+        try {
+            $time = Carbon::createFromFormat($this->format, $value);
+        } catch (\Exception $e) {
+            $time = Carbon::parse($value);
+        }
+
+        // 修复Form Year处理
+        if ($this->key == 'app.year_format') {
+            return $time->format('Y');
+        } else if ($this->key == 'app.date_format') {
+            return $time->format('Y-m-d');
+        }
+
+        return $time->format('Y-m-d H:i:s');
+    }
+
+    protected function getValueFromData($data, $column = null, $default = null)
+    {
+        $value = parent::getValueFromData($data, $column, $default);
+
+        if (is_null($value)) {
+            return $value;
+        }
+
+        try {
+            $time = Carbon::parse($value);
+        } catch (\Exception $e) {
+            $time = Carbon::createFromFormat($this->format, $value);
+        }
+
+        return $time->format($this->format);
     }
 
     public function render()
     {
-        $this->options['format'] = $this->format;
+        $this->options['format'] = datetime_format_2_js($this->format);
         $this->options['locale'] = config('app.locale');
         $this->options['allowInputToggle'] = true;
 

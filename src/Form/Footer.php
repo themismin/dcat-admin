@@ -4,6 +4,7 @@ namespace Dcat\Admin\Form;
 
 use Dcat\Admin\Widgets\Checkbox;
 use Illuminate\Contracts\Support\Renderable;
+use function array_merge;
 
 class Footer implements Renderable
 {
@@ -48,6 +49,8 @@ class Footer implements Renderable
      * @var arrays
      */
     protected $defaultcheckeds = ['view' => false, 'continue_editing' => false, 'continue_creating' => false];
+
+    protected $width = [];
 
     /**
      * Footer constructor.
@@ -208,6 +211,11 @@ class Footer implements Renderable
         return (new Checkbox('after-save', $options))->check($checked)->inline()->circle(true);
     }
 
+    public function width($field = 12, $label = 0)
+    {
+        $this->width = ['field' => $field, 'label' => $label];
+        return $this;
+    }
     /**
      * Use custom view.
      *
@@ -229,9 +237,11 @@ class Footer implements Renderable
     public function render()
     {
         $data = [
-            'buttons'    => $this->buttons,
+            // 'buttons'    => $this->buttons,
+            'buttons'    => array_merge($this->buttons, $this->checkboxes),
             'checkboxes' => $this->buildCheckboxes(),
-            'width'      => $this->builder->getWidth(),
+            // 'width'      => $this->builder->getWidth(),
+            'width'      => array_merge($this->builder->getWidth(), $this->width),
         ];
 
         $data = array_merge($data, $this->data);

@@ -189,6 +189,8 @@ class Grid
      */
     protected $async = false;
 
+    protected $disableCreateDialogRestButton = false;
+
     /**
      * Create a new grid instance.
      *
@@ -217,6 +219,17 @@ class Grid
         $this->setUpFilter();
 
         $this->callResolving();
+    }
+
+    public function disableDialogRestButton($disable = true)
+    {
+        $this->disableCreateDialogRestButton = $disable;
+        return $this;
+    }
+
+    public function isDisableDialogRestButton()
+    {
+        return $this->disableCreateDialogRestButton;
     }
 
     /**

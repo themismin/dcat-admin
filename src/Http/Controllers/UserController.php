@@ -174,7 +174,7 @@ class UserController extends AdminController
             }
         })->saving(function (Form $form) {
             if ($form->password && $form->model()->password != $form->password) {
-                $form->password = bcrypt($form->password);
+                    $form->password = bcrypt($form->password);
             }
 
             if (! $form->password) {

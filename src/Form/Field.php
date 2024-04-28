@@ -3,6 +3,7 @@
 namespace Dcat\Admin\Form;
 
 use Dcat\Admin\Admin;
+use Dcat\Admin\Badlands\Forms\Fields\HasFieldProperties;
 use Dcat\Admin\Form;
 use Dcat\Admin\Support\Helper;
 use Dcat\Admin\Traits\HasBuilderEvents;
@@ -24,6 +25,7 @@ class Field implements Renderable
     use Form\Concerns\HasFieldValidator;
     use HasBuilderEvents;
     use HasVariables;
+    use HasFieldProperties;
 
     const FILE_DELETE_FLAG = '_file_del_';
 
@@ -1325,7 +1327,7 @@ class Field implements Renderable
 
         $this->withScript();
 
-        return Admin::view($this->view(), $this->variables());
+        return Admin::view($this->view(), $this->getProperties()->merge($this->variables())->toArray());
     }
 
     protected function withScript()

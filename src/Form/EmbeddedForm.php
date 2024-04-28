@@ -9,7 +9,6 @@ use Illuminate\Support\Collection;
 
 /**
  * Class EmbeddedForm.
- *
  * @method Field\Text text($column, $label = '')
  * @method Field\Checkbox checkbox($column, $label = '')
  * @method Field\Radio radio($column, $label = '')
@@ -35,7 +34,7 @@ use Illuminate\Support\Collection;
  * @method Field\TimeRange timeRange($start, $end, $label = '')
  * @method Field\Number number($column, $label = '')
  * @method Field\Currency currency($column, $label = '')
- * @method Field\SwitchField switch($column, $label = '')
+ * @method Field\SwitchField switch ($column, $label = '')
  * @method Field\Display display($column, $label = '')
  * @method Field\Rate rate($column, $label = '')
  * @method Field\Divide divider(string $title = null)
@@ -44,7 +43,7 @@ use Illuminate\Support\Collection;
  * @method Field\Html html($html, $label = '')
  * @method Field\Tags tags($column, $label = '')
  * @method Field\Icon icon($column, $label = '')
- * @method Field\Embeds embeds($column, $label = '')
+ * @method Field\Embeds embeds($column, $label = '', $callback = null)
  * @method Field\Captcha captcha()
  * @method Field\Listbox listbox($column, $label = '')
  * @method Field\File file($column, $label = '')
@@ -75,40 +74,38 @@ class EmbeddedForm
 
     /**
      * Fields in form.
-     *
      * @var Collection
      */
     protected $fields;
 
     /**
      * Original data for this field.
-     *
      * @var array
      */
     protected $original = [];
 
     /**
      * Column name for this form.
-     *
      * @var string
      */
     protected $column;
 
+    protected bool $hasParentEmbed = false;
+
     /**
      * EmbeddedForm constructor.
-     *
-     * @param  string  $column
+     * @param string $column
      */
-    public function __construct($column)
+    public function __construct($column, $hasParentEmbed = false)
     {
         $this->column = $column;
+        $this->hasParentEmbed = $hasParentEmbed;
 
         $this->fields = new Collection();
     }
 
     /**
      * Get all fields in current form.
-     *
      * @return Collection
      */
     public function fields()
@@ -118,8 +115,7 @@ class EmbeddedForm
 
     /**
      * Set parent form for this form.
-     *
-     * @param  Form  $parent
+     * @param Form $parent
      * @return $this
      */
     public function setParent($parent)
@@ -146,8 +142,7 @@ class EmbeddedForm
 
     /**
      * Set original values for fields.
-     *
-     * @param  array  $data
+     * @param array $data
      * @return $this
      */
     public function setOriginal($data)
@@ -167,8 +162,7 @@ class EmbeddedForm
 
     /**
      * Prepare for insert or update.
-     *
-     * @param  array  $input
+     * @param array $input
      * @return mixed
      */
     public function prepare($input)
@@ -183,18 +177,24 @@ class EmbeddedForm
 
     /**
      * Do prepare work for each field.
-     *
-     * @param  string  $key
-     * @param  string  $record
+     * @param string $key
+     * @param string $record
      * @return mixed
      */
     protected function prepareValue($key, $record)
     {
         $field = $this->fields->first(function (Field $field) use ($key) {
-            return in_array($key, (array) $field->column());
+            return in_array($key, (array)$field->column());
         });
 
-        if (method_exists($field, 'prepare')) {
+        // 嵌套bug修复 TODO::显示嵌套表单的时候，不会显示原始数据
+        if (is_array($record)) {
+            foreach ($record as $k => $v) {
+                $record[$k] = $this->prepareValue($k, $v);
+            }
+        }
+
+        if (is_object($field) && method_exists($field, 'prepare')) {
             return $field->prepare($record);
         }
 
@@ -203,8 +203,7 @@ class EmbeddedForm
 
     /**
      * Set original data for each field.
-     *
-     * @param  string  $key
+     * @param string $key
      * @return void
      */
     protected function setFieldOriginalValue($key)
@@ -220,8 +219,7 @@ class EmbeddedForm
 
     /**
      * Fill data to all fields in form.
-     *
-     * @param  array  $data
+     * @param array $data
      * @return $this
      */
     public function fill(array $data)
@@ -235,8 +233,7 @@ class EmbeddedForm
 
     /**
      * Format form, set `element name` `error key` and `element class`.
-     *
-     * @param  Field  $field
+     * @param Field $field
      * @return Field
      */
     protected function formatField(Field $field)
@@ -276,8 +273,7 @@ class EmbeddedForm
 
     /**
      * Add a field to form.
-     *
-     * @param  Field  $field
+     * @param Field $field
      * @return $this
      */
     public function pushField(Field $field)
@@ -298,10 +294,17 @@ class EmbeddedForm
     }
 
     /**
+     * @return string
+     */
+    public function getColumnName(): string
+    {
+        return $this->column;
+    }
+
+    /**
      * Add nested-form fields dynamically.
-     *
-     * @param  string  $method
-     * @param  array  $arguments
+     * @param string $method
+     * @param array  $arguments
      * @return Field|$this
      */
     public function __call($method, $arguments)

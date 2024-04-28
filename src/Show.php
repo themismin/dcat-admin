@@ -93,6 +93,8 @@ class Show implements Renderable
      */
     protected $rows;
 
+    protected $width = 12;
+
     /**
      * Show constructor.
      *
@@ -322,7 +324,7 @@ class Show implements Renderable
      * @param  string  $label
      * @return Field
      */
-    public function field($name, $label = '')
+    public function field($name, $label = null)
     {
         return $this->addField($name, $label);
     }
@@ -594,6 +596,19 @@ class Show implements Renderable
     }
 
     /**
+     * Set width.
+     *
+     * @param int $width
+     *
+     * @return $this
+     */
+    public function width(int $width = 12)
+    {
+        $this->width = $width;
+        return $this;
+    }
+
+    /**
      * Add field and relation dynamically.
      *
      * @param  string  $method
@@ -670,6 +685,7 @@ class Show implements Renderable
         $this->callComposing();
 
         $data = [
+            'width' => $this->width,
             'panel'     => $this->panel->fill($this->fields),
             'relations' => $this->relations,
         ];

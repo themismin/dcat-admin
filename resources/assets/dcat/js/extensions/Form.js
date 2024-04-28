@@ -416,6 +416,12 @@ $.fn.form = function (options) {
     });
 
     $this.find('[type="submit"],.submit').click(function (e) {
+
+        // 修复Form会被重复提交的问题
+        if ($(this).hasClass('disabled') || $(this).hasClass('btn-loading') || $(this).attr('disabled') === 'disabled') {
+            return false;
+        }
+
         Dcat.Form(options);
 
         return false;

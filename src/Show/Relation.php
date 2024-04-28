@@ -43,6 +43,11 @@ class Relation extends Field
      */
     public $width = 12;
 
+    // Show的Relation增加prepend和addend功能
+    protected $prependHtml = '';
+    // Show的Relation增加prepend和addend功能
+    protected $appendHtml = '';
+
     /**
      * Relation constructor.
      *
@@ -105,6 +110,22 @@ class Relation extends Field
         return Helper::render($view);
     }
 
+    // Show的Relation增加prepend和addend功能
+    public function prepend($html)
+    {
+        $this->prependHtml = $html;
+
+        return $this;
+    }
+
+    // Show的Relation增加prepend和addend功能
+    public function append($html)
+    {
+        $this->appendHtml = $html;
+
+        return $this;
+    }
+
     /**
      * Render this relation panel.
      *
@@ -113,7 +134,7 @@ class Relation extends Field
     public function render()
     {
         return <<<HTML
-<div class="mt-1-5">{$this->build()}</div>
+<div class="mt-1-5">{$this->prependHtml}{$this->build()}{$this->appendHtml}</div>
 HTML;
     }
 }

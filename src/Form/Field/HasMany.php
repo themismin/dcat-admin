@@ -368,7 +368,7 @@ class HasMany extends Field
         return $this;
     }
 
-    public function getNestedFormColumnName()
+    public function getNestedFormColumnName($embed = null)
     {
         if ($this->parentRelationName) {
             $key = $this->parentKey ?? (NestedForm::DEFAULT_KEY_PREFIX.NestedForm::DEFAULT_PARENT_KEY_NAME);
@@ -376,7 +376,12 @@ class HasMany extends Field
             return $this->parentRelationName.'.'.$key.'.'.$this->column;
         }
 
-        return $this->column;
+        $result = $this->column;
+        if (!empty($embed)) {
+            return $embed . '.' . $result;
+        } else {
+            return $result;
+        }
     }
 
     protected function getNestedFormDefaultKeyName()

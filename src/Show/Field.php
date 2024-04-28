@@ -16,6 +16,9 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Fluent;
 use Illuminate\Support\Str;
 use Illuminate\Support\Traits\Macroable;
+use function array_merge;
+use function array_unique;
+use function implode;
 
 class Field implements Renderable
 {
@@ -94,13 +97,17 @@ class Field implements Renderable
      */
     protected $width = ['field' => 8, 'label' => 2];
 
+    // Show Field增加样式定制功能
+    protected $labelClass = [];
+    protected $fieldClass = [];
+
     /**
      * Field constructor.
      *
      * @param  string  $name
      * @param  string  $label
      */
-    public function __construct($name = '', $label = '')
+    public function __construct($name = '', $label = null)
     {
         $this->name = $name;
         $this->label = $this->formatLabel($label);
@@ -120,6 +127,37 @@ class Field implements Renderable
         $this->parent = $show;
 
         return $this;
+    }
+
+    // Show Field增加样式定制功能
+    public function setLabelClass($labelClass, bool $append = true)
+    {
+        $this->labelClass = $append
+            ? array_unique(array_merge($this->labelClass, (array) $labelClass))
+            : (array) $labelClass;
+
+        return $this;
+    }
+
+    // Show Field增加样式定制功能
+    public function getLabelClass()
+    {
+        return implode(' ', $this->labelClass);
+    }
+
+    public function setFieldClass($class, bool $append = true)
+    {
+        $this->fieldClass = $append
+            ? array_unique(array_merge($this->fieldClass, (array) $class))
+            : (array) $class;
+
+        return $this;
+    }
+
+    // Show Field增加样式定制功能
+    public function getFieldClass()
+    {
+        return implode(' ', $this->fieldClass);
     }
 
     /**
@@ -154,7 +192,7 @@ class Field implements Renderable
      */
     protected function formatLabel($label)
     {
-        if ($label) {
+        if (!is_null($label)) {
             return $label;
         }
 
@@ -323,9 +361,13 @@ HTML;
     public function link($href = '', $target = '_blank')
     {
         return $this->unescape()->as(function ($link) use ($href, $target) {
-            $href = $href ?: $link;
+            if (null === $link) {
+                return '&nbsp;';
+            }
 
-            return "<a href='$href' target='{$target}'>{$link}</a>";
+            $linkHref = empty($href) ? $link : $href;
+
+            return sprintf("<a href='%s' target='%s'>%s</a>", $linkHref, $target, $link);
         });
     }
 
@@ -714,6 +756,9 @@ HTML;
             'label'   => $this->getLabel(),
             'wrapped' => $this->border,
             'width'   => $this->width,
+            // Show Field增加样式定制功能
+            'labelClass' => $this->getLabelClass(),
+            'fieldClass' => $this->getFieldClass(),
         ];
     }
 

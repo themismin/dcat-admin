@@ -21,8 +21,7 @@ class Paginator implements Renderable
 
     /**
      * Create a new Paginator instance.
-     *
-     * @param  Grid  $grid
+     * @param Grid $grid
      */
     public function __construct(Grid $grid)
     {
@@ -33,7 +32,6 @@ class Paginator implements Renderable
 
     /**
      * Initialize work for Paginator.
-     *
      * @return void
      */
     protected function initPaginator()
@@ -47,7 +45,6 @@ class Paginator implements Renderable
 
     /**
      * Get Pagination links.
-     *
      * @return string
      */
     protected function paginationLinks()
@@ -57,12 +54,11 @@ class Paginator implements Renderable
 
     /**
      * Get per-page selector.
-     *
      * @return string|null
      */
     protected function perPageSelector()
     {
-        if (! $this->grid->getPerPages()) {
+        if (!$this->grid->getPerPages()) {
             return;
         }
 
@@ -71,7 +67,6 @@ class Paginator implements Renderable
 
     /**
      * Get range infomation of paginator.
-     *
      * @return string|\Symfony\Component\Translation\TranslatorInterface
      */
     protected function paginationRanger()
@@ -88,18 +83,21 @@ class Paginator implements Renderable
 
         $color = Admin::color()->dark80();
 
-        return "<span class='d-none d-sm-inline' style=\"line-height:33px;color:{$color}\">".trans('admin.pagination.range', $parameters->all()).'</span>';
+        if (!method_exists($this->paginator, 'total')) {
+            return '';
+        } else {
+            return "<span class='d-none d-sm-inline' style=\"line-height:33px;color:{$color}\">" . trans('admin.pagination.range', $parameters->all()) . '</span>';
+        }
     }
 
     /**
      * Render Paginator.
-     *
      * @return string
      */
     public function render()
     {
-        return $this->paginationRanger().
-            $this->paginationLinks().
+        return $this->paginationRanger() .
+            $this->paginationLinks() .
             $this->perPageSelector();
     }
 }
