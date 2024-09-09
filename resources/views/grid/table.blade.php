@@ -9,7 +9,7 @@
 
     {!! $grid->renderHeader() !!}
 
-    <div class="{!! $grid->formatTableParentClass() !!}">
+    <div class="{!! $grid->formatTableParentClass() !!}" style="min-height: 500px;">
         <table class="{{ $grid->formatTableClass() }}" id="{{ $tableId }}" >
             <thead>
             @if ($headers = $grid->getVisibleComplexHeaders())
