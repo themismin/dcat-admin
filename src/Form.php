@@ -68,6 +68,7 @@ use Symfony\Component\HttpFoundation\Response;
  * @method Field\Icon icon($column, $label = '')
  * @method Field\Embeds embeds($column, $label = '', Closure $callback = null)
  * @method Field\Captcha captcha()
+ * @method Field\I18nEmbeds i18nEmbeds($column, $label = '', array $langList, $callback = '')
  * @method Field\Listbox listbox($column, $label = '')
  * @method Field\File file($column, $label = '')
  * @method Field\Image image($column, $label = '')
@@ -88,6 +89,7 @@ use Symfony\Component\HttpFoundation\Response;
  * @method Field\MultipleSelectTable multipleSelectTable($column, $label = '')
  * @method Field\Button button(string $html = null)
  * @method Field\Autocomplete autocomplete($column, $label = '')
+ * @method Field\Head head($title, $size = 4)
  */
 class Form implements Renderable
 {
@@ -129,6 +131,7 @@ class Form implements Renderable
         'embeds'              => Field\Embeds::class,
         'editor'              => Field\Editor::class,
         'email'               => Field\Email::class,
+        'i18nEmbeds'          => Field\I18nEmbeds::class,
         'hidden'              => Field\Hidden::class,
         'id'                  => Field\Id::class,
         'ip'                  => Field\Ip::class,
@@ -172,6 +175,7 @@ class Form implements Renderable
         'selectTable'         => Field\SelectTable::class,
         'multipleSelectTable' => Field\MultipleSelectTable::class,
         'autocomplete'        => Field\Autocomplete::class,
+        'head' => Field\Head::class,
     ];
 
     /**
@@ -1336,6 +1340,13 @@ class Form implements Renderable
         });
 
         $this->builder->width($fieldWidth, $labelWidth);
+
+        return $this;
+    }
+
+    public function formWidth($width = 12)
+    {
+        $this->builder->formWidth($width);
 
         return $this;
     }

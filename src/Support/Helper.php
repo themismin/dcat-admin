@@ -393,7 +393,7 @@ class Helper
      */
     public static function exportArrayPhp(array $array)
     {
-        return "<?php \nreturn ".static::exportArray($array).";\n";
+        return "<?php\n\nreturn ".static::exportArray($array).";\n";
     }
 
     /**

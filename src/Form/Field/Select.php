@@ -123,6 +123,23 @@ class Select extends Field
     }
 
     /**
+     * @param        $model
+     * @param string $valueName
+     * @param string $keyName
+     * @return $this
+     * @throws \Dcat\Admin\Exception\RuntimeException
+     */
+    public function loadByModel($model,$valueName = 'name',$keyName = 'uuid'){
+        if (! class_exists($model)
+            || ! in_array(Model::class, class_parents($model))
+        ) {
+            throw new RuntimeException("[$model] must be a valid model class");
+        }
+        $this->options =  $model::pluck($valueName, $keyName)->toArray();
+        return $this;
+    }
+
+    /**
      * Load options from remote.
      *
      * @param  string  $url
@@ -221,6 +238,10 @@ class Select extends Field
             ],
         ]);
 
+        if ($this->attributes['readonly'] ?? false) {
+            $this->disable(true);
+        }
+
         $this->formatOptions();
 
         $this->addVariables([
@@ -228,6 +249,7 @@ class Select extends Field
             'groups'        => $this->groups,
             'configs'       => $this->config,
             'cascadeScript' => $this->getCascadeScript(),
+            'readOnly' => $this->attributes['readonly'] ?? false,
         ]);
 
         $this->initSize();
@@ -246,6 +268,11 @@ class Select extends Field
         }
 
         $this->options = array_filter($this->options, 'strlen');
+
+        $this->options = array_map(function ($value) {
+            return i18n_translation($value);
+        }, $this->options);
+
     }
 
     /**

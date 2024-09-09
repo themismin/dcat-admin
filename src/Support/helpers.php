@@ -190,9 +190,13 @@ if (! function_exists('admin_trans_option')) {
      * @param  null  $locale
      * @return array|\Illuminate\Contracts\Translation\Translator|null|string
      */
-    function admin_trans_option($optionValue, $field, $replace = [], $locale = null)
+    function admin_trans_option($field, $optionValue = null, $replace = [], $locale = null)
     {
         $slug = admin_controller_slug();
+
+        if ($optionValue === null) {
+            return admin_trans("{$slug}.options.{$field}", $replace, $locale);
+        }
 
         return admin_trans("{$slug}.options.{$field}.{$optionValue}", $replace, $locale);
     }
@@ -591,5 +595,133 @@ if (! function_exists('format_byte')) {
         }
 
         return round($value, $dec).$prefix_arr[$i];
+    }
+}
+
+if (!function_exists('i18n_translation')) {
+    /**
+     * 将i18n数据库格式根据服务端语言输出
+     * @param $value
+     * @param $all bool 展示所有语言
+     * @return string
+     */
+    function i18n_translation($value, $all = false)
+    {
+        static $locale = null;
+        if (!$locale) {
+            $locale = config('app.locale');
+        }
+
+        $i18nFunc = function ($value, $locale) use($all) {
+            if (!Str::startsWith($value, I18N_PREFIX)) {
+                return $value;
+            }
+            $json = substr($value, strlen(I18N_PREFIX));
+            $arr = json_decode($json, true);
+            if ($all) {
+                return $arr;
+            }
+            $lang = str_replace('-', '_', $locale);
+
+            return $arr[$lang] ?? $arr[config('app.fallback_locale')] ?? $value;
+        };
+
+        if (is_array($value)) {
+            return array_walk_recursive($value, function (&$value) use($i18nFunc, $locale) {
+                $value = $i18nFunc($value, $locale);
+            });
+        } else {
+            return $i18nFunc($value, $locale);
+        }
+    }
+}
+
+if (!function_exists('i18n_format')) {
+    /**
+     * 格式化成i18n数据库储存数据
+     * @param array $i18nArr
+     * @return string
+     */
+    function i18n_format(array $i18nArr)
+    {
+        return I18N_PREFIX . json_encode(array_filter($i18nArr, function ($v) {
+                return !empty($v);
+            }));
+    }
+}
+
+if (!function_exists('datetime_format_2_js')) {
+
+    /**
+     * Convert PHP datetime format to Moment.js datetime format
+     *
+     * @param $phpFormat
+     *
+     * @return string
+     */
+    function datetime_format_2_js($phpFormat): string
+    {
+        // Define the mappings from PHP date format characters to Moment.js format characters
+        $formatMap = [
+            'd' => 'DD',
+            'D' => 'ddd',
+            'j' => 'D',
+            'l' => 'dddd',
+            'N' => 'E',
+            'S' => 'o',
+            'w' => 'e',
+            'z' => 'DDD',
+            'W' => 'W',
+            'F' => 'MMMM',
+            'm' => 'MM',
+            'M' => 'MMM',
+            'n' => 'M',
+            't' => '',
+            'L' => '',
+            'o' => 'Y',
+            'Y' => 'YYYY',
+            'y' => 'YY',
+            'a' => 'a',
+            'A' => 'A',
+            'B' => '',
+            'g' => 'h',
+            'G' => 'H',
+            'h' => 'hh',
+            'H' => 'HH',
+            'i' => 'mm',
+            's' => 'ss',
+            'u' => 'SSS',
+            'v' => 'SSS',
+            'e' => 'zz',
+            'I' => '',
+            'O' => '',
+            'P' => '',
+            'T' => '',
+            'Z' => '',
+            'c' => '',
+            'r' => '',
+            'U' => 'X',
+        ];
+
+        $momentFormat = "";
+
+        // Loop through each character
+        for ($i = 0; $i < strlen($phpFormat); $i++) {
+            $char = $phpFormat[$i];
+
+            // If the character is backslash, it's escaping the next character
+            if ($char === '\\') {
+                $i++;
+                $momentFormat .= '[' . $phpFormat[$i] . ']';
+            } else {
+                if (isset($formatMap[$char])) {
+                    $momentFormat .= $formatMap[$char];
+                } else {
+                    $momentFormat .= $char;
+                }
+            }
+        }
+
+        return $momentFormat;
     }
 }

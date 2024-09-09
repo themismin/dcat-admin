@@ -18,6 +18,8 @@ class Select extends AbstractDisplayer
             'url'     => $this->url(),
             'options' => $options,
             'refresh' => $refresh,
+            'row' => $this->row
+
         ]);
     }
 

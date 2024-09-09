@@ -210,8 +210,12 @@ JS
             var group = parent.find('div.cascade-group.'+event.class);
             if (compare(checked, event.value, event.operator)) {
                 group.removeClass('d-none');
+                // 解决when条件下, 多个相同name的input表单提交时, 会重复提交参数导致后端不能正常获取到参数值的问题
+                group.find('input').removeAttr('disabled')
             } else {
                 group.addClass('d-none');
+                // 解决when条件下, 多个相同name的input表单提交时, 会重复提交参数导致后端不能正常获取到参数值的问题
+                group.find('input').attr('disabled', true)
             }
         });
     }).trigger(event);

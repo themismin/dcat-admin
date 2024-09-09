@@ -1,3 +1,14 @@
+## forks 升级：修改内容如下:
+- 将Form页面中的 "continue_editing", "continue_creating" 这两个Checkbox 改为 "保存&编辑", "保存&查看" 按钮
+- 在Form页面中增加 "后退" 按钮
+- 为Form的Footer增加了IconButton按钮, 可以自定义图标
+- 为表单组件: Date, Datetime, Time 增加了本地时间格式的支持, 使用PHP时间格式, 可以直接获的config中app.date_format, app.datetime_format, app.time_format的值, 例如: ['data_format'=>'d/M/Y', 'time_format'=>'h:i a', 'datetime_format'=>'d/M/Y h:i a']
+- 去除了footer中的版本信息
+  <br>
+2. Form中增加一个head的field种类, 用于输出可调宽度的divider
+4. admin_trans_option函数默认返回数组, 只有传入第二个参数$optionValue时才返回单选值的翻译
+5. Form增加formWidth函数以调整整体宽度, Show增加width函数用于调整整体宽度
+
 
 <div align="center">
     <img src="https://cdn.learnku.com/uploads/images/202009/27/38389/WFQxJ7qZ1k.png!large" height="80"> 

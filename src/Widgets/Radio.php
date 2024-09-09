@@ -14,6 +14,9 @@ class Radio extends Widget
     protected $disabledValues = [];
     protected $size;
     protected $inline = false;
+    protected $readOnly = false;
+    // Form Radio增加Cancelable功能
+    protected $cancelable = false;
 
     public function __construct(
         ?string $name = null,
@@ -79,6 +82,19 @@ class Radio extends Widget
         }
 
         return $this->setHtmlAttribute('disabled', 'disabled');
+    }
+
+    public function readOnly(bool $value = true)
+    {
+        $this->readOnly = $value;
+        return $this->setHtmlAttribute('disabled', 'disabled');
+    }
+
+    // Form Radio增加Cancelable功能
+    public function cancelable(bool $value = true)
+    {
+        $this->cancelable = $value;
+        return $this;
     }
 
     /**
@@ -155,9 +171,13 @@ class Radio extends Widget
             'attributes' => $this->formatHtmlAttributes(),
             'checked'    => $this->checked,
             'disabled'   => $this->disabledValues,
+            'readOnly' => $this->readOnly,
             'right'      => $this->right,
             'size'       => $this->size,
             'inline'     => $this->inline,
+            'name' => $this->getHtmlAttribute('name'),
+            // Form Radio增加Cancelable功能
+            'cancelable' => $this->cancelable,
         ];
     }
 

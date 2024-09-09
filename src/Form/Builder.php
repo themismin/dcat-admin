@@ -133,6 +133,8 @@ class Builder implements FieldsCollection
      */
     public $confirm = [];
 
+    protected $formWidth = 12;
+
     /**
      * Builder constructor.
      *
@@ -312,6 +314,13 @@ class Builder implements FieldsCollection
             'label' => $label,
             'field' => $field,
         ];
+
+        return $this;
+    }
+
+    public function formWidth($width = 12)
+    {
+        $this->formWidth = $width;
 
         return $this;
     }
@@ -717,7 +726,8 @@ class Builder implements FieldsCollection
         } else {
             if (! $this->layout->hasBlocks()) {
                 $this->layout->prepend(
-                    12,
+                    // 12,
+                    $this->formWidth,
                     $this->doWrap(view($this->view, $this->variables()))
                 );
             }

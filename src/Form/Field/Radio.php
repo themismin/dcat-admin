@@ -18,6 +18,9 @@ class Radio extends Field
 
     protected $inline = true;
 
+    // Form Radio增加Cancelable功能
+    protected $cancelable = false;
+
     /**
      * @param  array|\Closure|string  $options
      * @return $this
@@ -55,6 +58,14 @@ class Radio extends Field
         return $this;
     }
 
+    // Form Radio增加Cancelable功能
+    public function cancelable(bool $cancelable = true)
+    {
+        $this->cancelable = $cancelable;
+
+        return $this;
+    }
+
     /**
      * {@inheritdoc}
      */
@@ -74,11 +85,17 @@ class Radio extends Field
             $radio->disable();
         }
 
+        if ($this->attributes['readonly'] ?? false) {
+            $radio->readOnly();
+        }
+
         $radio
             ->inline($this->inline)
             ->check($this->value())
             ->class($this->getElementClassString())
-            ->size($this->size);
+            ->size($this->size)
+            ->size($this->size)
+            ->cancelable($this->cancelable);
 
         $this->addVariables([
             'radio' => $radio,
