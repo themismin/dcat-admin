@@ -23,7 +23,7 @@ trait HasPaginator
      *
      * @var int
      */
-    protected $perPage = 20;
+    protected $perPage = 10;
 
     /**
      * Paginate the grid.
@@ -31,7 +31,7 @@ trait HasPaginator
      * @param  int  $perPage
      * @return void
      */
-    public function paginate(int $perPage = 20)
+    public function paginate(int $perPage = 10)
     {
         $this->perPage = $perPage;
 
