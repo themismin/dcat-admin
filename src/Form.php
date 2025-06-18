@@ -996,6 +996,9 @@ class Form implements Renderable
     public function prepareUpdate(array $updates)
     {
         $prepared = [];
+        
+        // 定义系统内部字段，这些字段不应该被保存到数据库
+        $systemFields = ['_token', '_method', '_previous_', 'authCompanyId'];
 
         /** @var Field $field */
         foreach ($this->builder->fields() as $field) {
@@ -1018,6 +1021,14 @@ class Form implements Renderable
                 Arr::set($prepared, $columns, $value);
             }
         }
+        
+        // 处理未注册字段（即通过submitted/saving事件中的input()方法添加的字段）
+        foreach ($updates as $column => $value) {
+            // 排除系统内部字段和已处理的字段
+            if (!in_array($column, $systemFields) && !Arr::has($prepared, $column)) {
+                Arr::set($prepared, $column, $value);
+            }
+        }
 
         return $prepared;
     }
@@ -1030,6 +1041,12 @@ class Form implements Renderable
      */
     public function prepareInsert($inserts)
     {
+        // 定义系统内部字段，这些字段不应该被保存到数据库
+        $systemFields = ['_token', '_method', '_previous_', 'authCompanyId'];
+        
+        // 记录原始数据，包括通过事件添加的字段
+        $originalInserts = $inserts;
+        
         Helper::prepareHasOneRelation($this->builder->fields(), $inserts);
 
         foreach ($inserts as $column => $value) {
@@ -1045,6 +1062,14 @@ class Form implements Renderable
 
         foreach ($inserts as $key => $value) {
             Arr::set($prepared, $key, $value);
+        }
+        
+        // 处理未注册字段（即通过submitted/saving事件中的input()方法添加的字段）
+        foreach ($originalInserts as $column => $value) {
+            // 排除系统内部字段和已处理的字段
+            if (!in_array($column, $systemFields) && !Arr::has($prepared, $column) && is_null($this->field($column))) {
+                Arr::set($prepared, $column, $value);
+            }
         }
 
         return $prepared;
@@ -1831,4 +1856,5 @@ class Form implements Renderable
 
         return new Field\Nullable();
     }
+
 }
