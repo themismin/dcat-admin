@@ -998,7 +998,14 @@ class Form implements Renderable
         $prepared = [];
         
         // 定义系统内部字段，这些字段不应该被保存到数据库
-        $systemFields = ['_token', '_method', '_previous_', 'authCompanyId'];
+        $systemFields = ['_token', '_method', '_previous_', 'authCompanyId', '_file_', 'file'];
+        
+        // 所有以下划线开头的字段都视为系统内部字段
+        foreach (array_keys($updates) as $key) {
+            if (is_string($key) && strpos($key, '_') === 0) {
+                $systemFields[] = $key;
+            }
+        }
 
         /** @var Field $field */
         foreach ($this->builder->fields() as $field) {
@@ -1042,7 +1049,14 @@ class Form implements Renderable
     public function prepareInsert($inserts)
     {
         // 定义系统内部字段，这些字段不应该被保存到数据库
-        $systemFields = ['_token', '_method', '_previous_', 'authCompanyId'];
+        $systemFields = ['_token', '_method', '_previous_', 'authCompanyId', '_file_', 'file'];
+        
+        // 所有以下划线开头的字段都视为系统内部字段
+        foreach (array_keys($inserts) as $key) {
+            if (is_string($key) && strpos($key, '_') === 0) {
+                $systemFields[] = $key;
+            }
+        }
         
         // 记录原始数据，包括通过事件添加的字段
         $originalInserts = $inserts;
