@@ -852,7 +852,7 @@ class Field implements Renderable
      * @param  mixed  $value
      * @return mixed
      */
-    final public function prepare($value)
+    public function prepare($value)
     {
         $value = $this->prepareInputValue($value);
 
