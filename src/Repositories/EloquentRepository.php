@@ -86,7 +86,7 @@ class EloquentRepository extends Repository implements TreeRepository
 
         $this->setIsSoftDeletes(
             in_array(SoftDeletes::class, $traits, true)
-            || in_array(DcatSoftDeletes::class, $traits, true)
+                || in_array(DcatSoftDeletes::class, $traits, true)
         );
     }
 
@@ -223,7 +223,8 @@ class EloquentRepository extends Repository implements TreeRepository
             $model,
             str_replace('.', '->', $column),
             $type,
-            $cast);
+            $cast
+        );
     }
 
     /**
@@ -299,13 +300,13 @@ class EloquentRepository extends Repository implements TreeRepository
 
         $relation = $this->model()->$relationName();
 
-        $model->addQuery('select', [$this->model()->getTable().'.*']);
+        $model->addQuery('select', [$this->model()->getTable() . '.*']);
 
         $model->addQuery('join', $this->joinParameters($relation));
 
         $this->setOrderBy(
             $model,
-            $relation->getRelated()->getTable().'.'.str_replace('.', '->', $relationColumn),
+            $relation->getRelated()->getTable() . '.' . str_replace('.', '->', $relationColumn),
             $type,
             $cast
         );
@@ -330,7 +331,7 @@ class EloquentRepository extends Repository implements TreeRepository
                 $relatedTable,
                 $relation->{$foreignKeyMethod}(),
                 '=',
-                $relatedTable.'.'.$relation->getRelated()->getKeyName(),
+                $relatedTable . '.' . $relation->getRelated()->getKeyName(),
             ];
         }
 
@@ -500,6 +501,16 @@ class EloquentRepository extends Repository implements TreeRepository
         DB::transaction(function () use ($form, $model, &$result) {
             $updates = $form->updates();
 
+            // 检查请求中是否有materialable_id但updates中没有
+            if (request()->has('materialable_id') && !isset($updates['materialable_id'])) {
+                $materialId = (int)request()->input('materialable_id');
+                $updates['materialable_id'] = $materialId;
+
+                \Log::info('EloquentRepository::update - 从请求添加materialable_id', [
+                    'materialable_id' => $materialId
+                ]);
+            }
+
             [$relations, $relationKeyMap] = $this->getRelationInputs($model, $updates);
 
             if ($relations) {
@@ -511,7 +522,17 @@ class EloquentRepository extends Repository implements TreeRepository
                 $model->setAttribute($column, $value);
             }
 
+            \Log::info('EloquentRepository::update - 更新前模型属性', [
+                'model_attributes' => $model->getAttributes(),
+                'updates' => $updates
+            ]);
+
             $result = $model->update();
+
+            \Log::info('EloquentRepository::update - 更新后模型属性', [
+                'model_attributes' => $model->getAttributes(),
+                'result' => $result
+            ]);
 
             $this->updateRelation($form, $model, $relations, $relationKeyMap);
         });
@@ -538,7 +559,27 @@ class EloquentRepository extends Repository implements TreeRepository
             );
         }
 
-        return $model->moveOrderUp() ? true : false;
+        try {
+            \Log::info('EloquentRepository::moveOrderUp - 开始执行', [
+                'model_id' => $model->getKey(),
+                'model_class' => get_class($model)
+            ]);
+
+            $result = $model->moveOrderUp();
+
+            \Log::info('EloquentRepository::moveOrderUp - 执行完成', [
+                'result' => $result
+            ]);
+
+            return $result ? true : false;
+        } catch (\Exception $e) {
+            \Log::error('EloquentRepository::moveOrderUp - 执行失败', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return false;
+        }
     }
 
     /**
@@ -560,7 +601,27 @@ class EloquentRepository extends Repository implements TreeRepository
             );
         }
 
-        return $model->moveOrderDown() ? true : false;
+        try {
+            \Log::info('EloquentRepository::moveOrderDown - 开始执行', [
+                'model_id' => $model->getKey(),
+                'model_class' => get_class($model)
+            ]);
+
+            $result = $model->moveOrderDown();
+
+            \Log::info('EloquentRepository::moveOrderDown - 执行完成', [
+                'result' => $result
+            ]);
+
+            return $result ? true : false;
+        } catch (\Exception $e) {
+            \Log::error('EloquentRepository::moveOrderDown - 执行失败', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return false;
+        }
     }
 
     /**

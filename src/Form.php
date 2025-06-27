@@ -102,8 +102,8 @@ class Form implements Renderable
     use Concerns\HasRows;
     use Concerns\HasTabs;
     use Macroable {
-            __call as macroCall;
-        }
+        __call as macroCall;
+    }
 
     /**
      * Remove flag in `has many` form.
@@ -803,6 +803,17 @@ class Form implements Renderable
 
             $this->updates = $this->prepareUpdate($this->updates);
 
+            // 检查请求中是否有materialable_id但updates中没有
+            if (request()->has('materialable_id') && !isset($this->updates['materialable_id'])) {
+                $materialId = (int)request()->input('materialable_id');
+                $this->updates['materialable_id'] = $materialId;
+
+                \Log::info('Form::update - 从请求添加materialable_id', [
+                    'materialable_id' => $materialId,
+                    'updates' => $this->updates
+                ]);
+            }
+
             $updated = $this->repository->update($this);
 
             // 返回 JsonResponse 对象，直接中断后续逻辑
@@ -941,17 +952,17 @@ class Form implements Renderable
                 return false;
             }
 
-            return rtrim($resourcesPath, '/')."/{$key}/edit";
+            return rtrim($resourcesPath, '/') . "/{$key}/edit";
         }
 
         if ($this->request->get('after-save') == 2) {
             // continue creating
-            return rtrim($resourcesPath, '/').'/create';
+            return rtrim($resourcesPath, '/') . '/create';
         }
 
         if ($this->request->get('after-save') == 3) {
             // view resource
-            return rtrim($resourcesPath, '/')."/{$key}";
+            return rtrim($resourcesPath, '/') . "/{$key}";
         }
 
         return $this->request->get(Builder::PREVIOUS_URL_KEY) ?: $this->getCurrentUrl($resourcesPath);
@@ -995,11 +1006,13 @@ class Form implements Renderable
      */
     public function prepareUpdate(array $updates)
     {
+        \Log::info('Form::prepareUpdate - 开始处理', ['updates' => $updates]);
+
         $prepared = [];
-        
+
         // 定义系统内部字段，这些字段不应该被保存到数据库
         $systemFields = ['_token', '_method', '_previous_', 'authCompanyId', '_file_', 'file'];
-        
+
         // 所有以下划线开头的字段都视为系统内部字段
         foreach (array_keys($updates) as $key) {
             if (is_string($key) && strpos($key, '_') === 0) {
@@ -1028,7 +1041,7 @@ class Form implements Renderable
                 Arr::set($prepared, $columns, $value);
             }
         }
-        
+
         // 处理未注册字段（即通过submitted/saving事件中的input()方法添加的字段）
         foreach ($updates as $column => $value) {
             // 排除系统内部字段和已处理的字段
@@ -1036,6 +1049,16 @@ class Form implements Renderable
                 Arr::set($prepared, $column, $value);
             }
         }
+
+        // 特殊处理：确保 materialable_id 字段被包含在更新数据中
+        if (isset($this->updates['materialable_id']) && !isset($prepared['materialable_id'])) {
+            $prepared['materialable_id'] = $this->updates['materialable_id'];
+            \Log::info('Form::prepareUpdate - 从 Form::updates 添加 materialable_id', [
+                'materialable_id' => $this->updates['materialable_id']
+            ]);
+        }
+
+        \Log::info('Form::prepareUpdate - 处理完成', ['prepared' => $prepared]);
 
         return $prepared;
     }
@@ -1050,17 +1073,17 @@ class Form implements Renderable
     {
         // 定义系统内部字段，这些字段不应该被保存到数据库
         $systemFields = ['_token', '_method', '_previous_', 'authCompanyId', '_file_', 'file'];
-        
+
         // 所有以下划线开头的字段都视为系统内部字段
         foreach (array_keys($inserts) as $key) {
             if (is_string($key) && strpos($key, '_') === 0) {
                 $systemFields[] = $key;
             }
         }
-        
+
         // 记录原始数据，包括通过事件添加的字段
         $originalInserts = $inserts;
-        
+
         Helper::prepareHasOneRelation($this->builder->fields(), $inserts);
 
         foreach ($inserts as $column => $value) {
@@ -1077,7 +1100,7 @@ class Form implements Renderable
         foreach ($inserts as $key => $value) {
             Arr::set($prepared, $key, $value);
         }
-        
+
         // 处理未注册字段（即通过submitted/saving事件中的input()方法添加的字段）
         foreach ($originalInserts as $column => $value) {
             // 排除系统内部字段和已处理的字段
@@ -1870,5 +1893,4 @@ class Form implements Renderable
 
         return new Field\Nullable();
     }
-
 }
